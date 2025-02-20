@@ -11,11 +11,21 @@ class ProductServiceStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Create Lambda function
+        # Create Lambda functions
         get_products_list = _lambda.Function(
             self, 'GetProductsListFunction',
             runtime=_lambda.Runtime.PYTHON_3_9,
             handler='get_products_list.handler',
+            code=_lambda.Code.from_asset('src/functions'),
+            environment={
+                # Add environment variables if needed
+            }
+        )
+
+        get_product_by_id = _lambda.Function(
+            self, 'GetProductByIdFunction',
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            handler='get_product_by_id.handler',
             code=_lambda.Code.from_asset('src/functions'),
             environment={
                 # Add environment variables if needed
@@ -32,11 +42,18 @@ class ProductServiceStack(Stack):
             )
         )
 
-        # Create products resource and GET method
+        # Create products resource and methods
         products = api.root.add_resource('products')
         products.add_method(
             'GET',
             apigateway.LambdaIntegration(get_products_list)
+        )
+
+        # Add product/{productId} resource and GET method
+        product_by_id = products.add_resource('{productId}')
+        product_by_id.add_method(
+            'GET',
+            apigateway.LambdaIntegration(get_product_by_id)
         )
 
         # Output the API URL
