@@ -1,6 +1,6 @@
 import json
 from typing import Dict, Any
-from mocks.products import products
+from .mocks.products import products
 
 def create_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
     """Helper function to create standardized response"""
