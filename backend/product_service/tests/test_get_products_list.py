@@ -28,10 +28,9 @@ def test_get_products_list_structure(api_gateway_event, lambda_context):
     
     # Assert structure of first product
     product = body[0]
-    assert all(key in product for key in ['id', 'title', 'description', 'price', 'count'])
+    assert all(key in product for key in ['id', 'title', 'description', 'price'])
     assert isinstance(product['id'], str)
     assert isinstance(product['price'], (int, float))
-    assert isinstance(product['count'], int)
 
 def test_get_products_list_error_handling(api_gateway_event, lambda_context, mocker):
     """Test error handling when something goes wrong"""

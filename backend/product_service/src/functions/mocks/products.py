@@ -3,7 +3,7 @@ products = [
         "description": "Short Product Description1",
         "id": "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
         "price": 24,
-        "title": "ProductOne",
+        "title": "MyShinyProduct",
     },
     {
         "description": "Short Product Description7",

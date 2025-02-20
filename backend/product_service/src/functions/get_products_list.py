@@ -1,6 +1,6 @@
 import json
 from typing import Dict, Any
-from .mocks.products import products
+from mocks.products import products
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
