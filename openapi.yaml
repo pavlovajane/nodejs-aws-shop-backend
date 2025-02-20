@@ -59,8 +59,7 @@ paths:
           required: true
           schema:
             type: string
-            format: number
-            example: "1"
+            example: "7567ec4b-b10c-48c5-9345-fc73c48a80aa"
       responses:
         '200':
           description: Success
@@ -90,31 +89,25 @@ components:
         - title
         - description
         - price
-        - count
       properties:
         id:
           type: string
-          format: number
-          example: "1"
+          example: "7567ec4b-b10c-48c5-9345-fc73c48a80aa"
         title:
           type: string
-          example: "Product 1"
+          example: "ProductOne"
         description:
           type: string
-          example: "Description for product 1"
+          example: "Short Product Description1"
         price:
           type: number
           format: float
           minimum: 0
-          example: 99.99
-        count:
-          type: integer
-          minimum: 0
-          example: 10
+          example: 24
         image:
           type: string
           format: uri
-          example: "https://example.com/product1.jpg"
+          example: "https://example.com/product-image.jpg"
 
     Error:
       type: object
@@ -146,7 +139,7 @@ components:
             properties:
               message:
                 type: string
-                example: "Bad Request: Missing productId parameter"
+                example: "Bad Request: Missing or invalid productId parameter"
               statusCode:
                 type: integer
                 example: 400
