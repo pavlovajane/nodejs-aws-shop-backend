@@ -39,12 +39,31 @@ def handler(event, context : Any, dynamodb = None):
             'count': int(body['count'])
         }
 
-        # Put product and stock items into DynamoDB
-        products_table.put_item(Item=new_product)
-        print(f"Product created: {new_product}")
-
-        stocks_table.put_item(Item=new_stock)
-        print(f"Stock created: {new_stock}")
+        # Perform a transaction to ensure both product and stock are created together
+        try:
+            dynamodb.transact_write_items(
+                TransactItems=[
+                    {
+                        'Put': {
+                            'TableName': products_table,
+                            'Item': new_product
+                        }
+                    },
+                    {
+                        'Put': {
+                            'TableName': stocks_table,
+                            'Item': new_stock
+                        }
+                    }
+                ]
+            )
+            print(f"Transaction successful: Product {new_product} and Stock {new_stock} created")
+        except Exception as e:
+            print(f"Transaction failed: {e}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'message': 'Transaction failed', 'error': str(e)})
+            }
 
         response_body = {
             'message': 'Product and stock created successfully',
