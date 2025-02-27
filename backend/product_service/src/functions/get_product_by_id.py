@@ -1,6 +1,25 @@
+from decimal import Decimal
 import json
+import os
 from typing import Dict, Any
-from mocks.products import products
+
+import boto3
+
+def get_product_by_id(products_table, product_id):
+    response = products_table.get_item(Key={'id': product_id})
+    item = response.get('Item')
+    return item
+
+def get_stock_by_product_id(stocks_table, product_id):
+    response = stocks_table.get_item(Key={'product_id': product_id})
+    item = response.get('Item')
+    return item    
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return super().default(obj)
 
 def create_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
     """Helper function to create standardized response"""
@@ -11,10 +30,10 @@ def create_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
             "Access-Control-Allow-Credentials": True,
             "Content-Type": "application/json"
         },
-        "body": json.dumps(body)
+        "body": json.dumps(body, cls=DecimalEncoder)
     }
 
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, Any]:
     try:
         # Check if pathParameters exists and contains productId
         if not event.get('pathParameters') or 'productId' not in event['pathParameters']:
@@ -30,11 +49,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 "message": "Bad Request: ProductId cannot be empty"
             })
 
+        dynamodb = boto3.resource('dynamodb') if not dynamodb else dynamodb
+        products_table = dynamodb.Table(os.environ['PRODUCTS_TABLE_NAME'])
+        stocks_table = dynamodb.Table(os.environ['STOCKS_TABLE_NAME'])
+
         # Find the product
-        product = next(
-            (item for item in products if item["id"] == product_id),
-            None
-        )
+        product = get_product_by_id(products_table, product_id)
         
         # Return 404 if product not found
         if not product:
@@ -46,7 +66,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     "productId": product_id
                 }
             })
+        print(f"Fetched products: {product}")
+
+        stock = get_stock_by_product_id(stocks_table, product_id)
+        stock_count = stock.get('count', 0) if stock else 0
         
+        product['count'] = stock_count
+
         # Return the product if found
         return create_response(200, {
             "data": product,

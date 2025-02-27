@@ -5,7 +5,7 @@ install-dev:
 	pip install -r requirements-dev.txt
 
 test:
-	pytest
+	pytest -s
 
 test-coverage:
 	pytest --cov=src --cov-report=html
