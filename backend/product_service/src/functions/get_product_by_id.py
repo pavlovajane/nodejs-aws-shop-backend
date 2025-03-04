@@ -71,7 +71,8 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
         stock = get_stock_by_product_id(stocks_table, product_id)
         stock_count = stock.get('count', 0) if stock else 0
         
-        product['count'] = stock_count
+        product['count'] = int(stock_count)
+        product['price'] = float(product['price'])
 
         # Return the product if found
         return create_response(200, {

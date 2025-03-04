@@ -37,7 +37,8 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
 
         for product in products:
             product_id = product['id']
-            product['count'] = stocks.get(product_id, 0)
+            product['count'] = int(stocks.get(product_id, 0))
+            product['price'] = float(product['price'])
 
         return {
             "statusCode": 200,

@@ -5,10 +5,24 @@ import os
 import uuid
 from decimal import Decimal
 
+from backend.product_service.src.functions.get_product_by_id import DecimalEncoder
+
 # Initialize DynamoDB resource
 dynamodb = boto3.resource('dynamodb')
 products_table = dynamodb.Table(os.environ['PRODUCTS_TABLE_NAME'])
 stocks_table = dynamodb.Table(os.environ['STOCKS_TABLE_NAME'])
+
+def create_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
+    """Helper function to create standardized response"""
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": True,
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps(body, cls=DecimalEncoder)
+    }
 
 def handler(event, context : Any, dynamodb = None):
     print(f"Incoming request: {json.dumps(event)}")
@@ -76,9 +90,13 @@ def handler(event, context : Any, dynamodb = None):
             'body': json.dumps(response_body, default=str)
         }
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'message': 'Internal server error', 'error': str(e)})
-        }
+    except Exception as error:
+        print(f"Error: {str(error)}")  # Basic error logging
+        return create_response(500, {
+            "message": "Internal server error",
+            "statusCode": 500,
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "details": str(error) if isinstance(error, Exception) else "Unknown error"
+            }
+        })
