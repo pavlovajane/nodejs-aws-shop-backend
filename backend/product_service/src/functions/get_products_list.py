@@ -41,7 +41,7 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
                 'id': product_id,
                 'title': p['title'],
                 'description': p['description'],
-                'price': int(p['price']),
+                'price': float(p['price']),
                 'count': int(stocks.get(product_id, 0))
             }
             output_products.append(product)
