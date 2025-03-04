@@ -101,8 +101,7 @@ components:
           type: string
           example: "Short Product Description1"
         price:
-          type: number
-          format: float
+          type: integer
           minimum: 0
           example: 24
         count:
