@@ -34,11 +34,17 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
     
         stocks = get_stocks_dict(stocks_table)
         print(f"Fetched stocks: {stocks}")
-
-        for product in products:
-            product_id = product['id']
-            product['count'] = int(stocks.get(product_id, 0))
-            product['price'] = float(product['price'])
+        output_products = []
+        for p in products:
+            product_id = p['id']
+            product = {
+                'id': product_id,
+                'title': p['title'],
+                'description': p['description'],
+                'price': float(p['price']),
+                'count': int(stocks.get(product_id, 0))
+            }
+            output_products.append(product)
 
         return {
             "statusCode": 200,
@@ -46,7 +52,7 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
                 "Access-Control-Allow-Origin": "*",  # Enable CORS for frontend integration
                 "Access-Control-Allow-Credentials": True
             },
-            "body": json.dumps(products, cls=DecimalEncoder)
+            "body": json.dumps(output_products, cls=DecimalEncoder)
         }
     except Exception as error:
 
