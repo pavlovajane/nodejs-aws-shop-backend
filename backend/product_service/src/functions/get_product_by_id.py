@@ -80,10 +80,7 @@ def handler(event: Dict[str, Any], context: Any, dynamodb = None) -> Dict[str, A
         }
 
         # Return the product if found
-        return create_response(200, {
-            "data": output_product,
-            "statusCode": 200
-        })
+        return create_response(200, output_product)
         
     except Exception as error:
         print(f"Error: {str(error)}")  # Basic error logging

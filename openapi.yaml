@@ -33,15 +33,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Product'
-                  statusCode:
-                    type: integer
-                    example: 200
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -66,13 +61,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Product'
-                  statusCode:
-                    type: integer
-                    example: 200
+                $ref: '#/components/schemas/Product'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
