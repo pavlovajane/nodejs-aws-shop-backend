@@ -12,7 +12,6 @@ class ProductServiceStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # 🔍 Import existing DynamoDB tables by name
         products_table = dynamodb.Table.from_table_name(
             self, "ProductsTable", "products"
         )
@@ -28,7 +27,6 @@ class ProductServiceStack(Stack):
             handler='get_products_list.handler',
             code=_lambda.Code.from_asset('src/functions'),
             environment={
-                # Add environment variables if needed
                 "PRODUCTS_TABLE_NAME": products_table.table_name,
                 "PRODUCTS_TABLE_ARN": products_table.table_arn,
                 "STOCKS_TABLE_NAME": stocks_table.table_name,
@@ -46,7 +44,6 @@ class ProductServiceStack(Stack):
             handler='get_product_by_id.handler',
             code=_lambda.Code.from_asset('src/functions'),
             environment={
-                # Add environment variables if needed
                 "PRODUCTS_TABLE_NAME": products_table.table_name,
                 "PRODUCTS_TABLE_ARN": products_table.table_arn,
                 "STOCKS_TABLE_NAME": stocks_table.table_name,
