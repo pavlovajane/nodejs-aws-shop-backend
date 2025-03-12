@@ -1,3 +1,2 @@
 Title,Description,Price,Count
-"Imported via SQS1","I'm imported via SQS",11.05,100
-"Imported via SQS2","I'm also imported via SQS",55.50,1000
+"Imported via SQS3","Testing low-stock alert via SNS",15,1

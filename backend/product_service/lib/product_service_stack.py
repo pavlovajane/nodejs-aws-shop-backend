@@ -126,17 +126,14 @@ class ProductServiceStack(Stack):
             topic_name="createProductTopic"
         )
 
-    
-
-        # additional subscription for low-stock items
-        # with different email using filters
+        # additional subscription for ano
         create_product_topic.add_subscription(
             sns_subs.EmailSubscription(
                 "birli_pl@mail.ru",
                 filter_policy={
-                    "count": sns.SubscriptionFilter.numeric_filter({
-                        "lessThan": 1
-                    })
+                    "Count": sns.SubscriptionFilter.numeric_filter(
+                        less_than=2
+                    )
                 }
             )
         )
