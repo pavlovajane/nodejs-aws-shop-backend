@@ -1,4 +1,5 @@
 # tests/test_catalog_batch_process.py
+from unittest.mock import patch
 import pytest
 import json
 import os
@@ -36,8 +37,8 @@ def sqs_event():
 @pytest.fixture(autouse=True)
 def mock_env(monkeypatch):
     monkeypatch.setenv('SNS_TOPIC_ARN', 'arn:aws:sns:region:123456789012:MyTopic')
-    monkeypatch.setenv('PRODUCTS_TABLE_NAME', 'products-table')
-    monkeypatch.setenv('STOCKS_TABLE_NAME', 'stocks-table')
+    monkeypatch.setenv('PRODUCTS_TABLE_NAME', 'products')
+    monkeypatch.setenv('STOCKS_TABLE_NAME', 'stocks')
 
 @pytest.fixture
 def mock_aws_clients(mocker):
@@ -60,14 +61,17 @@ def mock_aws_clients(mocker):
         'sns': mock_sns
     }
 
-def test_successful_processing(sqs_event, mock_aws_clients):
+def test_successful_processing(sqs_event, mock_env, mock_aws_clients):
     # Call the handler
-    response = handler(sqs_event, None)
+    response = handler(sqs_event, 
+                       context=None, 
+                       sns_client_mock=mock_aws_clients['sns'], 
+                       dynamodb_mock=mock_aws_clients['dynamodb'])
 
     expected_transact_items = [
         {
             'Put': {
-                'TableName': 'products-table',
+                'TableName': 'products',
                 'Item': {
                     'id': {'S': 'mocked-uuid'},
                     'title': {'S': 'Test Product'},
@@ -78,7 +82,7 @@ def test_successful_processing(sqs_event, mock_aws_clients):
         },
         {
             'Put': {
-                'TableName': 'stocks-table',
+                'TableName': 'stocks',
                 'Item': {
                     'product_id': {'S': 'mocked-uuid'},
                     'count': {'N': '5'}

@@ -5,7 +5,6 @@ import uuid
 import boto3
 from typing import Dict, Any
     
-dynamodb = boto3.client('dynamodb')
 products_table = os.environ['PRODUCTS_TABLE_NAME']
 stocks_table = os.environ['STOCKS_TABLE_NAME']
 
@@ -50,13 +49,14 @@ def to_dynamo_request(parsed, requests):
         }
     })
     
-def write_to_dynamo(requests):
+def write_to_dynamo(requests, dynamodb):
     dynamodb.transact_write_items(
         TransactItems=requests
     )
 
-def handler(event, context: Any):
-    sns_client = boto3.client('sns')
+def handler(event, context: Any, sns_client_mock = None, dynamodb_mock = None):
+    sns_client = sns_client_mock if sns_client_mock else boto3.client('sns')
+    dynamodb = dynamodb_mock if dynamodb_mock else boto3.client('dynamodb')
     sns_topic_arn = os.environ['SNS_TOPIC_ARN']
     
     try:
@@ -66,7 +66,7 @@ def handler(event, context: Any):
             to_dynamo_request(message_body, requests)
 
         # create products
-        write_to_dynamo(requests)
+        write_to_dynamo(requests, dynamodb)
         
         # Send notification to SNS
         sns_client.publish(
