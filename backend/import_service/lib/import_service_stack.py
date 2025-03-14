@@ -37,7 +37,7 @@ class ImportServiceStack(Stack):
             handler='import_products_file.handler',
             code=lambda_.Code.from_asset('src/functions'),
             environment={
-                "BUCKET_NAME": "bucket-for-files-import",
+                "BUCKET_NAME": "bucket-for-files-import",        
             }
         )
 
@@ -52,6 +52,7 @@ class ImportServiceStack(Stack):
                 "BUCKET_NAME": "bucket-for-files-import",
                 "PRODUCTS_TABLE_NAME": "products",
                 "STOCKS_TABLE_NAME": "stocks",
+                "SQS_QUEUE_URL": "https://sqs.us-east-2.amazonaws.com/904233116615/catalogItemsQueue"
             }
         )
 
@@ -75,6 +76,17 @@ class ImportServiceStack(Stack):
                 resources=[
                     f"{import_bucket.bucket_arn}/uploaded/*",
                     f"{import_bucket.bucket_arn}/parsed/*"
+                ]
+            )
+        )
+
+        import_file_parser.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    'sqs:sendmessage',
+                ],
+                resources=[
+                    "arn:aws:sqs:us-east-2:904233116615:catalogItemsQueue",
                 ]
             )
         )
