@@ -126,7 +126,7 @@ class ProductServiceStack(Stack):
             topic_name="createProductTopic"
         )
 
-        # additional subscription for ano
+        # additional subscription for another email
         create_product_topic.add_subscription(
             sns_subs.EmailSubscription(
                 "birli_pl@mail.ru",
