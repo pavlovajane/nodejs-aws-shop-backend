@@ -110,11 +110,18 @@ class ImportServiceStack(Stack):
         )
 
         import_integration = apigateway.LambdaIntegration(import_products_file)
-
+    
         import_resource = api.root.add_resource('import')
+
+        method_options = apigateway.MethodOptions(
+            authorization_type=apigateway.AuthorizationType.CUSTOM,
+            authorizer="ApiAuthorizer"
+        )
+    
         import_resource.add_method(
             'GET',
             import_integration,
+            method_options=method_options,
             request_parameters={
                 'method.request.querystring.name': True
             }
