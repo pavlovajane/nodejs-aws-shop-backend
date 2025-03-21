@@ -7,10 +7,14 @@ from aws_cdk import (
     aws_s3_notifications as s3n,
     aws_dynamodb as dynamodb,
     aws_iam as iam,
+    Fn as cdkFn,
     CfnOutput
 )
 from constructs import Construct
 import os
+from dotenv import load_dotenv
+    
+load_dotenv()
 
 class AuthServiceStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
@@ -27,17 +31,15 @@ class AuthServiceStack(Stack):
             }
         )
 
-        apigateway.RequestAuthorizer(
-            self,
-            'ApiAuthorizer',
-            handler=auth_request_lambda,
-            identity_sources=[apigateway.IdentitySource.header('Authorization')],
-            results_cache_ttl=Duration.seconds(0)
+        # Grant API Gateway permission to invoke the Lambda function
+        auth_request_lambda.add_permission(
+            "ApiGatewayInvoke",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            action="lambda:InvokeFunction"
         )
         
         CfnOutput(
-            self, 
-            'ApiUrl',
-            value=api.url,
-            description='API Gateway endpoint URL'
+            self, "AuthorizerLambdaArn",
+            value=auth_request_lambda.function_arn,
+            export_name="AuthorizerLambdaArn"
         )

@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_s3_notifications as s3n,
     aws_dynamodb as dynamodb,
     aws_iam as iam,
+    Fn as cdkFn,
     CfnOutput
 )
 from constructs import Construct
@@ -15,6 +16,13 @@ from constructs import Construct
 class ImportServiceStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        # import auth lambda arn and create lambda based i it
+        authorizer_lambda_arn = cdkFn.import_value("AuthorizerLambdaArn")
+        authorizer_lambda = lambda_.Function.from_function_arn(
+            self, "AuthorizerLambda",
+            function_arn=authorizer_lambda_arn
+        )
 
         products_table = dynamodb.Table.from_table_name(
             self, "ProductsTable", "products"
@@ -113,15 +121,19 @@ class ImportServiceStack(Stack):
     
         import_resource = api.root.add_resource('import')
 
-        method_options = apigateway.MethodOptions(
-            authorization_type=apigateway.AuthorizationType.CUSTOM,
-            authorizer="ApiAuthorizer"
+        authorizer = apigateway.RequestAuthorizer(
+            self,
+            'ApiAuthorizer',
+            handler=authorizer_lambda,
+            identity_sources=[apigateway.IdentitySource.header('Authorization')],
+            results_cache_ttl=Duration.seconds(0)
         )
     
         import_resource.add_method(
             'GET',
             import_integration,
-            method_options=method_options,
+            authorization_type=apigateway.AuthorizationType.CUSTOM,
+            authorizer=authorizer,
             request_parameters={
                 'method.request.querystring.name': True
             }

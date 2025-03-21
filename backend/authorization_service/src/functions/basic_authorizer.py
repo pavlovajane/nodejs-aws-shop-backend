@@ -3,13 +3,14 @@ import json
 import base64
 from typing import Dict, Any
 
-def get_user_credentials() -> Dict[str, str]:
-    
+def get_user_credentials() -> Dict[str, str]:    
     credentials = {}
     for key, value in os.environ.items():
         if '=' in value:
-            username, password = value.split('=')
-            credentials[username] = password
+            parts = value.split('=')
+            if len(parts) == 2:
+                username, password = parts
+                credentials[username] = password
     return credentials
 
 def decode_token(auth_token: str) -> tuple:
@@ -37,7 +38,7 @@ def generate_policy(principal_id: str, effect: str, resource: str) -> Dict[str, 
         }
     }
 
-def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     # Extract the Authorization header
     auth_header = event.get('headers', {}).get('Authorization')
@@ -51,6 +52,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     # Decode credentials from the Authorization header
     username, password = decode_token(auth_header)
+    print(username, password)
     if not username or not password:
         return {
             'statusCode': 403,
@@ -59,7 +61,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     # Get credentials from environment variables
     valid_credentials = get_user_credentials()
-
+    print(valid_credentials)
     # Verify credentials
     if username in valid_credentials and valid_credentials[username] == password:
         # Generate policy for successful authorization
